@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AzamPesa Digital Contract</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for consistent typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Toastify CSS and JS for notifications -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        /* Custom styles for body and print media */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        /* Print styles to optimize output for printing */
+        @media print {
+            body { background-color: #fff; color: #000; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .contract-container { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 1in !important; width: 100% !important; max-width: none !important; }
+            .form-section { display: block !important; opacity: 1 !important; height: auto !important; visibility: visible !important; position: static !important; transform: none !important; padding: 1rem 0; border-bottom: 1px dashed #ccc; }
+            .form-section:last-child { border-bottom: none; }
+            .form-section h2 { color: #000; font-size: 1.5rem; margin-bottom: 1rem; }
+            .form-section label, .form-section p { font-size: 0.9rem; line-height: 1.4; }
+            input[type="text"], input[type="tel"], input[type="file"], textarea { border: 1px solid #ccc !important; padding: 0.5rem !important; background-color: #fff !important; color: #000 !important; }
+            .camera-section img { max-width: 200px; height: auto; border: 1px solid #ccc; }
+            .signature-field { border-bottom: 1px dashed #000; padding-bottom: 0.5rem; margin-top: 1rem; }
+        }
+        /* Animation for loading spinner (kept for other potential uses, though GPS loader is removed) */
+        .animate-spin { display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 sm:p-6">
+    <div class="contract-container bg-white shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-3xl border border-gray-200">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-6">AzamPesa Digital Contract</h1>
+
+        <!-- AzamPesa Logo -->
+        <img src="https://azampesa.co.tz/wp-content/uploads/2023/05/AzamPesa-logo.png" alt="AzamPesa Logo" class="w-32 h-auto mx-auto mb-6">
+
+        <!-- Progress Bar to show form completion -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6 no-print">
+            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%;"></div>
+        </div>
+
+        <form id="contractForm" class="space-y-6">
+            <!-- Step 0: Freelancer Parent Tree Section -->
+            <div id="step0" class="form-section transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">0. Freelancer Parent Tree</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label for="freelancerType" class="block text-sm font-medium text-gray-700 mb-1">Chagua Aina ya Freelancer:</label>
+                        <select id="freelancerType" name="freelancerType" required aria-describedby="freelancerType-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Chagua --</option>
+                            <option value="Stand Alone">Stand Alone</option>
+                            <option value="Under Teamleader">Under Teamleader</option>
+                        </select>
+                        <p id="freelancerType-error" class="text-sm text-red-500 hidden">Please select a freelancer type.</p>
+                    </div>
+                    <div id="teamleaderIdSection" class="hidden space-y-4">
+                        <div>
+                            <label for="teamleaderId" class="block text-sm font-medium text-gray-700 mb-1">Teamleader ID:</label>
+                            <input type="text" id="teamleaderId" name="teamleaderId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p id="teamleaderId-error" class="text-sm text-red-500 hidden">Please enter the Teamleader ID.</p>
+                        </div>
+                        <div>
+                            <label for="teamleaderName" class="block text-sm font-medium text-gray-700 mb-1">Jina la Teamleader:</label>
+                            <input type="text" id="teamleaderName" name="teamleaderName"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p id="teamleaderName-error" class="text-sm text-red-500 hidden">Please enter the Teamleader's name.</p>
+                        </div>
+                        <div>
+                            <label for="teamleaderPhone" class="block text-sm font-medium text-gray-700 mb-1">Namba ya Simu ya Teamleader:</label>
+                            <input type="tel" id="teamleaderPhone" name="teamleaderPhone"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 07XXXXXXXX">
+                            <p id="teamleaderPhone-error" class="text-sm text-red-500 hidden">Please enter a valid Teamleader phone number (e.g., 07XXXXXXXX).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Information Section -->
+            <div id="step1" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">1. Personal Information</h2>
+                <p class="text-sm text-gray-600 mb-6">
+                    Kwa kutimiza matakwa ya kifungu 13 (1) (a) cha kanuni za Utoaji Namba za Kielectroniki ya 2018, ninathibitisha kuwa taarifa zifuatazo ni sahihi na zimetolewa kwa hiari yangu.
+                </p>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label for="agentFullName" class="block text-sm font-medium text-gray-700 mb-1">Majina kamili ya Msajili akaunti:</label>
+                        <input type="text" id="agentFullName" name="agentFullName" autocomplete="name" required aria-describedby="agentFullName-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p id="agentFullName-error" class="text-sm text-red-500 hidden">Please enter full name.</p>
+                    </div>
+                    <div>
+                        <label for="primaryPhone" class="block text-sm font-medium text-gray-700 mb-1">Namba ya simu ya kufungulia:</label>
+                        <input type="tel" id="primaryPhone" name="primaryPhone" autocomplete="tel" required aria-describedby="primaryPhone-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 07XXXXXXXX">
+                        <p id="primaryPhone-error" class="text-sm text-red-500 hidden">Please enter a valid phone number (e.g., 07XXXXXXXX).</p>
+                    </div>
+                    <div>
+                        <label for="alternativePhone" class="block text-sm font-medium text-gray-700 mb-1">Namba ya simu mbadala:</label>
+                        <input type="tel" id="alternativePhone" name="alternativePhone" autocomplete="tel"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Optional">
+                    </div>
+                    <div>
+                        <label for="emailAddress" class="block text-sm font-medium text-gray-700 mb-1">Email Address:</label>
+                        <input type="email" id="emailAddress" name="emailAddress" autocomplete="email" required aria-describedby="emailAddress-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., jina@mfano.com">
+                        <p id="emailAddress-error" class="text-sm text-red-500 hidden">Please enter a valid email address.</p>
+                    </div>
+                    <div>
+                        <label for="nidaId" class="block text-sm font-medium text-gray-700 mb-1">Namba ya kitambulisho cha Taifa (NIDA):</label>
+                        <input type="text" id="nidaId" name="nidaId" required aria-describedby="nidaId-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 12345678-12345-12345-12">
+                        <p id="nidaId-error" class="text-sm text-red-500 hidden">Please enter a valid NIDA ID (e.g., 12345678-12345-12345-12).</p>
+                    </div>
+                    <div>
+                        <label for="tinNumber" class="block text-sm font-medium text-gray-700 mb-1">Namba ya Utambulisho wa Kodi (TIN):</label>
+                        <input type="text" id="tinNumber" name="tinNumber" aria-describedby="tinNumber-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 123-456-789 (Optional)">
+                        <p id="tinNumber-error" class="text-sm text-red-500 hidden">Please enter a valid TIN (e.g., 123-456-789).</p>
+                    </div>
+
+                    <!-- Option for no NIDA ID -->
+                    <div class="mt-4">
+                        <input type="checkbox" id="noNidaCheckbox" name="noNidaCheckbox" class="mr-2">
+                        <label for="noNidaCheckbox" class="text-sm font-medium text-gray-700">Mimi sina Namba ya Kitambulisho cha Taifa (NIDA)</label>
+                    </div>
+
+                    <!-- Alternative ID Section (initially hidden) -->
+                    <div id="alternativeIdSection" class="hidden p-4 border border-gray-300 rounded-md bg-gray-50 space-y-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Taarifa Nyingine ya Kitambulisho (Mzazi/Mwenzi)</h3>
+                        <p class="text-sm text-red-600">
+                            Kumbuka: Mwenye NIDA anayetumika hapa LAZIMA awe shahidi kwenye sehemu ya "Signatures" (Hatua ya 4).
+                        </p>
+                        <div>
+                            <label for="otherIdType" class="block text-sm font-medium text-gray-700 mb-1">Aina Nyingine ya Kitambulisho:</label>
+                            <select id="otherIdType" name="otherIdType"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Chagua Aina ya Kitambulisho</option>
+                                <option value="Pasipoti">Pasipoti</option>
+                                <option value="Leseni ya Udereva">Leseni ya Udereva</option>
+                                <option value="Kitambulisho cha Kazi">Kitambulisho cha Kazi</option>
+                                <option value="Hati ya Kuzaliwa">Hati ya Kuzaliwa</option>
+                                <option value="Nyingine">Nyingine</option>
+                            </select>
+                            <p id="otherIdType-error" class="text-sm text-red-500 hidden">Please select other ID type.</p>
+                        </div>
+                        <div>
+                            <label for="otherIdNumber" class="block text-sm font-medium text-gray-700 mb-1">Namba ya Kitambulisho Kingine:</label>
+                            <input type="text" id="otherIdNumber" name="otherIdNumber"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p id="otherIdNumber-error" class="text-sm text-red-500 hidden">Please enter other ID number.</p>
+                        </div>
+                        <div>
+                            <label for="nidaHolderName" class="block text-sm font-medium text-gray-700 mb-1">Jina Kamili la Mwenye NIDA (Mzazi/Mwenzi):</label>
+                            <input type="text" id="nidaHolderName" name="nidaHolderName" autocomplete="name"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p id="nidaHolderName-error" class="text-sm text-red-500 hidden">Please enter NIDA holder's full name.</p>
+                        </div>
+                        <div>
+                            <label for="nidaHolderRelationship" class="block text-sm font-medium text-gray-700 mb-1">Uhusiano na Mwenye NIDA:</label>
+                            <select id="nidaHolderRelationship" name="nidaHolderRelationship"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Chagua Uhusiano</option>
+                                <option value="Mzazi">Mzazi (Parent)</option>
+                                <option value="Mwenzi">Mwenzi (Spouse)</option>
+                                <option value="Kaka">Kaka (Brother)</option>
+                                <option value="Dada">Dada (Sister)</option>
+                                <option value="Baba">Baba (Father)</option>
+                                <option value="Mama">Mama (Mother)</option>
+                                <option value="Mke">Mke (Wife)</option>
+                                <option value="Mume">Mume (Husband)</option>
+                                <option value="Nyingine">Nyingine</option>
+                            </select>
+                            <p id="nidaHolderRelationship-error" class="text-sm text-red-500 hidden">Please select relationship.</p>
+                        </div>
+                        <div>
+                            <label for="nidaHolderNidaId" class="block text-sm font-medium text-gray-700 mb-1">Namba ya Kitambulisho cha Taifa (NIDA) ya Mwenye NIDA:</label>
+                            <input type="text" id="nidaHolderNidaId" name="nidaHolderNidaId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 12345678-12345-12345-12">
+                            <p id="nidaHolderNidaId-error" class="text-sm text-red-500 hidden">Please enter NIDA holder's NIDA ID (e.g., 12345678-12345-12345-12).</p>
+                        </div>
+                        <div>
+                            <label for="nidaHolderPhone" class="block text-sm font-medium text-gray-700 mb-1">Namba ya Simu ya Aliyetoa Kitambulisho Chake:</label>
+                            <input type="tel" id="nidaHolderPhone" name="nidaHolderPhone" autocomplete="tel"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 07XXXXXXXX">
+                            <p id="nidaHolderPhone-error" class="text-sm text-red-500 hidden">Please enter a valid phone number (e.g., 07XXXXXXXX).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Address Information Section -->
+            <div id="step2" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">2. Mahali anapoishi (Address Information)</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="region" class="block text-sm font-medium text-gray-700 mb-1">Mkoa:</label>
+                        <select id="region" name="region" required aria-describedby="region-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Region</option>
+                        </select>
+                        <p id="region-error" class="text-sm text-red-500 hidden">Please select a region.</p>
+                    </div>
+                    <div>
+                        <label for="district" class="block text-sm font-medium text-gray-700 mb-1">Wilaya:</label>
+                        <select id="district" name="district" required disabled aria-describedby="district-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select District</option>
+                        </select>
+                        <p id="district-error" class="text-sm text-red-500 hidden">Please select a district.</p>
+                    </div>
+                    <div>
+                        <label for="ward" class="block text-sm font-medium text-gray-700 mb-1">Kata:</label>
+                        <select id="ward" name="ward" required disabled aria-describedby="ward-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Ward</option>
+                        </select>
+                        <p id="ward-error" class="text-sm text-red-500 hidden">Please select a ward.</p>
+                    </div>
+                    <div>
+                        <label for="street" class="block text-sm font-medium text-gray-700 mb-1">Mtaa:</label>
+                        <input type="text" id="street" name="street" autocomplete="street-address" required placeholder="e.g., Uhuru Street" aria-describedby="street-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p id="street-error" class="text-sm text-red-500 hidden">Please enter a street name.</p>
+                    </div>
+                    <div>
+                        <label for="postalCode" class="block text-sm font-medium text-gray-700 mb-1">Postal Code:</label>
+                        <input type="text" id="postalCode" name="postalCode" autocomplete="postal-code" required placeholder="e.g., 12345" aria-describedby="postalCode-error"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p id="postalCode-error" class="text-sm text-red-500 hidden">Please enter a valid 5-digit postal code.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Contract Terms Section (formerly Step 2) -->
+            <div id="step3" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">3. Contract Terms</h2>
+                <p class="text-sm text-gray-600 mb-6">KWA KUSAINI HAPA CHINI, NATHIBITISHA YAFUATAYO:</p>
+                <div class="space-y-4 text-gray-700 text-sm">
+                    <p>1. Mimi ni wakala halali wa AzamPesa niliyesajiliwa kwa ajili ya kutoa huduma ya kusajili akaunti za AzamPesa.</p>
+                    <p>2. Na kwa mamlaka niliyopewa na AzamPesa Tanzania Ltd namteua msajili akaunti ("Agent staff") kufanya usajili wa akaunti za AzamPesa kwa niaba yangu, kwa kuzingatia sheria na kanuni zote za AzamPesa na Mamlaka ya Mawasiliano Tanzania (TCRA).</p>
+                    <p>3. Nakubali kuwa na jukumu kamili la vitendo vyote vitakavyofanywa na "Agent staff" katika kutekeleza majukumu yake ya usajili wa akaunti za AzamPesa.</p>
+                    <p>4. Ninathibitisha kuwa nimepokea mafunzo ya kutosha kuhusu taratibu za usajili wa akaunti za AzamPesa na ninaelewa kikamilifu majukumu yangu kama wakala na yale ya "Agent staff".</p>
+                    <p>5. Ninakubali kutoa taarifa sahihi na kamili kwa AzamPesa kuhusu "Agent staff" wote ninaowateua, na nitawajibika kutoa taarifa za mabadiliko yoyote yanayohusu "Agent staff" hao.</p>
+                    <p>6. Ninakubali kuwa AzamPesa ina haki ya kusitisha mkataba huu mara moja endapo kutakuwa na ukiukaji wowote wa masharti haya au kanuni za AzamPesa au TCRA.</p>
+                    <p>7. Ninakubali kuwa AzamPesa haitawajibika kwa hasara yoyote itakayotokana na uzembe, udanganyifu, au vitendo vingine visivyo halali vilivyofanywa na "Agent staff" wangu.</p>
+                    <p>8. Ninakubali kuwa mkataba huu unaweza kubadilishwa au kurekebishwa na AzamPesa kwa kutoa ilani ya maandishi.</p>
+                    <p>9. Ninakubali kuwa mkataba huu unatawaliwa na sheria za Jamhuri ya Muungano wa Tanzania.</p>
+                </div>
+                <!-- Digital Signature for Contract Terms -->
+                <div class="mt-6 p-4 border border-gray-300 rounded-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-3">Acceptance of Terms</h3>
+                    <label for="contractAcceptanceName" class="block text-sm font-medium text-gray-700 mb-1">Jina kamili (Kukubali Masharti):</label>
+                    <input type="text" id="contractAcceptanceName" name="contractAcceptanceName" required
+                        class="w-full px-3 py-2 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent"
+                        placeholder="Type your full name to accept terms">
+                    <p class="text-xs text-gray-500 mt-1">Type your full name to digitally accept the contract terms.</p>
+
+                    <label for="contractAcceptanceDate" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Tarehe ya Kukubali:</label>
+                    <input type="date" id="contractAcceptanceDate" name="contractAcceptanceDate" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <!-- Step 4: ID & Facial Verification Section (formerly Step 3) -->
+            <div id="step4" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">4. ID & Facial Verification</h2>
+                <div class="mb-6 p-4 border border-gray-300 rounded-md">
+                    <label for="idUpload" class="block text-sm font-medium text-gray-700 mb-2">Upload NIDA ID Document:</label>
+                    <input type="file" id="idUpload" name="idUpload" accept="image/*,application/pdf" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                    <p id="idUploadFileName" class="mt-2 text-sm text-gray-500"></p>
+                </div>
+                <div class="mb-6 p-4 border border-gray-300 rounded-md camera-section">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Facial ID Verification:</label>
+                    <div class="flex flex-col items-center space-y-4">
+                        <video id="cameraFeed" class="w-full max-w-md h-auto bg-gray-200 rounded-md" autoplay></video>
+                        <canvas id="cameraCanvas" class="hidden"></canvas>
+                        <button type="button" id="capturePhoto" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition">
+                            Capture Photo
+                        </button>
+                        <img id="capturedImage" class="hidden w-full max-w-xs h-auto rounded-md border border-gray-300" alt="Captured Photo"
+                            src="https://placehold.co/300x200/cccccc/000000?text=No+Photo" onerror="this.src='https://placehold.co/300x200/cccccc/000000?text=No+Photo'">
+                        <p id="cameraStatus" class="text-sm text-gray-600"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Signatures Section (formerly Step 4) -->
+            <div id="step5" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">5. Signatures</h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="p-4 border border-gray-300 rounded-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Agent Staff Signature</h3>
+                        <label for="agentSignatureName" class="block text-sm font-medium text-gray-700 mb-1">Jina la Msajili akaunti:</label>
+                        <input type="text" id="agentSignatureName" name="agentSignatureName" required class="w-full px-3 py-2 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Sahihi (Type your name)</p>
+                        <label for="agentSignatureDate" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Tarehe:</label>
+                        <input type="date" id="agentSignatureDate" name="agentSignatureDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <label for="agentSignaturePhone" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Namba ya Simu:</label>
+                        <input type="tel" id="agentSignaturePhone" name="agentSignaturePhone" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+
+                    <div class="p-4 border border-gray-300 rounded-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Witness Signature</h3>
+                        <label for="witnessSignatureName" class="block text-sm font-medium text-gray-700 mb-1">Jina la Shahidi:</label>
+                        <input type="text" id="witnessSignatureName" name="witnessSignatureName" required class="w-full px-3 py-2 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Sahihi (Type your name)</p>
+                        <label for="witnessNidaId" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Namba ya kitambulisho cha Taifa (NIDA) ya Shahidi:</label>
+                        <input type="text" id="witnessNidaId" name="witnessNidaId" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 12345678-12345-12345-12">
+                        <p id="witnessNidaId-error" class="text-sm text-red-500 hidden">Please enter a valid NIDA ID for the witness.</p>
+                        <label for="witnessSignatureDate" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Tarehe:</label>
+                        <input type="date" id="witnessSignatureDate" name="witnessSignatureDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <label for="witnessSignaturePhone" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Namba ya Simu:</label>
+                        <input type="tel" id="witnessSignaturePhone" name="witnessSignaturePhone" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 07XXXXXXXX">
+                    </div>
+
+                    <div class="p-4 border border-gray-300 rounded-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">AzamPesa Agent Representative Signature</h3>
+                        <label for="agentRepSignatureName" class="block text-sm font-medium text-gray-700 mb-1">Jina la Mwakilishi wa AzamPesa:</label>
+                        <input type="text" id="agentRepSignatureName" name="agentRepSignatureName" required class="w-full px-3 py-2 border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Sahihi (Type your name)</p>
+                        <label for="agentRepSignatureDate" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Tarehe:</label>
+                        <input type="date" id="agentRepSignatureDate" name="agentRepSignatureDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <label for="agentRepSignaturePhone" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Namba ya Simu:</label>
+                        <input type="tel" id="agentRepSignaturePhone" name="agentRepSignaturePhone" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Preview & Finalize Section (formerly Step 5) -->
+            <div id="step6" class="form-section hidden transition-all duration-500">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">6. Preview & Finalize</h2>
+                <div id="previewContent" class="bg-gray-50 p-4 rounded-md border border-gray-200 text-sm text-gray-800 print-only"></div>
+                <div class="flex flex-wrap justify-center gap-4 mt-6 no-print">
+                    <button type="button" id="printContract" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition">
+                        Print Contract
+                    </button>
+                    <button type="button" id="shareContract" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-md transition">
+                        Share Summary
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-6 no-print">
+                <button type="button" id="prevBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-md transition" style="display: none;">
+                    Previous
+                </button>
+                <button type="button" id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition">
+                    Next
+                </button>
+                <button type="submit" id="submitBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition" style="display: none;">
+                    Submit Contract
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Data structure for regions, districts, and wards in Tanzania
+        const locations = {
+            "Dar es Salaam": {
+                "Kinondoni": ["Kawe", "Mbezi", "Msasani", "Manzese"],
+                "Ilala": ["Kariakoo", "Upanga", "Kinyerezi", "Buguruni"],
+                "Temeke": ["Mbagala", "Chang'ombe", "Kigamboni", "Azimio"]
+            },
+            "Arusha": {
+                "Arusha Urban": ["Central", "Sokon One", "Njiro", "Sakina"],
+                "Meru": ["Usa River", "Leguruki", "Mbuguni"]
+            },
+            "Dodoma": {
+                "Dodoma Urban": ["Kikuyu", "Majengo", "Miyuji"],
+                "Chamwino": ["Mvumi", "Itiso"]
+            }
+        };
+
+        // Global variables for form state and elements
+        let currentStep = 0;
+        const totalSteps = 7; // Updated total steps (0-6)
+        const formSections = document.querySelectorAll('.form-section');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const contractForm = document.getElementById('contractForm');
+        const previewContent = document.getElementById('previewContent');
+        const printContractBtn = document.getElementById('printContract');
+        const shareContractBtn = document.getElementById('shareContract');
+        const regionSelect = document.getElementById('region');
+        const districtSelect = document.getElementById('district');
+        const wardSelect = document.getElementById('ward');
+        const streetInput = document.getElementById('street');
+        const postalCodeInput = document.getElementById('postalCode');
+        const cameraFeed = document.getElementById('cameraFeed');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const capturePhotoBtn = document.getElementById('capturePhoto');
+        const capturedImage = document.getElementById('capturedImage');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const idUploadInput = document.getElementById('idUpload');
+        const idUploadFileName = document.getElementById('idUploadFileName');
+        let stream = null; // To hold the camera stream
+
+        // New elements for Freelancer Parent Tree
+        const freelancerTypeSelect = document.getElementById('freelancerType');
+        const teamleaderIdSection = document.getElementById('teamleaderIdSection');
+        const teamleaderIdInput = document.getElementById('teamleaderId');
+        const teamleaderNameInput = document.getElementById('teamleaderName');
+        const teamleaderPhoneInput = document.getElementById('teamleaderPhone');
+
+        // New elements for Personal Information
+        const emailAddressInput = document.getElementById('emailAddress');
+        const tinNumberInput = document.getElementById('tinNumber');
+
+        // New elements for Alternative ID
+        const noNidaCheckbox = document.getElementById('noNidaCheckbox');
+        const nidaIdInput = document.getElementById('nidaId');
+        const alternativeIdSection = document.getElementById('alternativeIdSection');
+        const otherIdTypeInput = document.getElementById('otherIdType');
+        const otherIdNumberInput = document.getElementById('otherIdNumber');
+        const nidaHolderNameInput = document.getElementById('nidaHolderName');
+        const nidaHolderRelationshipInput = document.getElementById('nidaHolderRelationship');
+        const nidaHolderNidaIdInput = document.getElementById('nidaHolderNidaId');
+        const nidaHolderPhoneInput = document.getElementById('nidaHolderPhone');
+        const witnessNidaIdInput = document.getElementById('witnessNidaId');
+
+        /**
+         * Displays a toast notification message.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of toast ('success' or 'error').
+         */
+        function showToast(message, type = 'success') {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: 'top', // `top` or `bottom`
+                position: 'right', // `left`, `center` or `right`
+                backgroundColor: type === 'success' ? '#16a34a' : '#dc2626', // Green for success, red for error
+            }).showToast();
+        }
+
+        /**
+         * Populates the region dropdown with data from the `locations` object.
+         */
+        function populateRegions() {
+            for (const region in locations) {
+                const option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                regionSelect.appendChild(option);
+            }
+        }
+
+        /**
+         * Populates the district dropdown based on the selected region.
+         * Disables district and ward dropdowns if no region is selected.
+         */
+        function populateDistricts() {
+            const selectedRegion = regionSelect.value;
+            districtSelect.innerHTML = '<option value="">Select District</option>'; // Clear existing options
+            wardSelect.innerHTML = '<option value="">Select Ward</option>'; // Clear ward options as well
+            districtSelect.disabled = true;
+            wardSelect.disabled = true;
+            if (locations[selectedRegion]) {
+                Object.keys(locations[selectedRegion]).forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+                districtSelect.disabled = false; // Enable district select
+            }
+        }
+
+        /**
+         * Populates the ward dropdown based on the selected region and district.
+         * Disables ward dropdown if no district is selected.
+         */
+        function populateWards() {
+            const selectedRegion = regionSelect.value;
+            const selectedDistrict = districtSelect.value;
+            wardSelect.innerHTML = '<option value="">Select Ward</option>'; // Clear existing options
+            wardSelect.disabled = true;
+            if (locations[selectedRegion]?.[selectedDistrict]) {
+                locations[selectedRegion][selectedDistrict].forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward;
+                    option.textContent = ward;
+                    wardSelect.appendChild(option);
+                });
+                wardSelect.disabled = false; // Enable ward select
+            }
+        }
+
+        /**
+         * Updates the progress bar based on the current step.
+         */
+        function updateProgressBar() {
+            const progress = ((currentStep + 1) / totalSteps) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        /**
+         * Shows the specified step of the form and updates navigation buttons.
+         * Manages camera state (start/stop) and preview generation.
+         * @param {number} stepIndex - The index of the step to show.
+         */
+        function showStep(stepIndex) {
+            formSections.forEach((section, index) => {
+                // Toggle visibility and apply transition styles
+                section.classList.toggle('hidden', index !== stepIndex);
+                section.style.opacity = index === stepIndex ? '1' : '0';
+                section.style.height = index === stepIndex ? 'auto' : '0';
+                section.style.visibility = index === stepIndex ? 'visible' : 'hidden';
+                section.style.position = index === stepIndex ? 'static' : 'absolute';
+                section.style.transform = index === stepIndex ? 'translateY(0)' : 'translateY(20px)';
+            });
+
+            // Update navigation button visibility
+            prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-block';
+            nextBtn.style.display = currentStep === totalSteps - 1 ? 'none' : 'inline-block';
+            submitBtn.style.display = currentStep === totalSteps - 1 ? 'inline-block' : 'none';
+
+            updateProgressBar(); // Update progress bar
+
+            // Handle camera for step 4 (ID & Facial Verification)
+            if (stepIndex === 4) {
+                startCamera();
+                // Reset captured image to placeholder when entering camera step
+                capturedImage.src = "https://placehold.co/300x200/cccccc/000000?text=No+Photo";
+                capturedImage.classList.add('hidden');
+                cameraStatus.textContent = '';
+            } else {
+                stopCamera();
+            }
+
+            // Generate preview for the last step
+            if (stepIndex === totalSteps - 1) {
+                generatePreview();
+            }
+        }
+
+        /**
+         * Validates the inputs in the current form step.
+         * Displays error messages and toasts if validation fails.
+         * @returns {boolean} True if the current step is valid, false otherwise.
+         */
+        function validateCurrentStep() {
+            const currentSection = formSections[currentStep];
+            // Get all required inputs within the current section
+            const inputsToValidate = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+
+            // Clear all previous error messages for the current section
+            currentSection.querySelectorAll('.text-red-500').forEach(el => el.classList.add('hidden'));
+            currentSection.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+
+
+            let isValid = true; // Overall validation status for the step
+
+            // Step-specific validations
+            if (currentStep === 0) { // Freelancer Parent Tree
+                if (freelancerTypeSelect.value.trim() === '') {
+                    document.getElementById('freelancerType-error').classList.remove('hidden');
+                    showToast('Please select a freelancer type.', 'error');
+                    isValid = false;
+                } else if (freelancerTypeSelect.value === 'Under Teamleader') {
+                    if (teamleaderIdInput.value.trim() === '') {
+                        document.getElementById('teamleaderId-error').classList.remove('hidden');
+                        showToast('Please enter the Teamleader ID.', 'error');
+                        isValid = false;
+                    }
+                    if (teamleaderNameInput.value.trim() === '') {
+                        document.getElementById('teamleaderName-error').classList.remove('hidden');
+                        showToast('Please enter the Teamleader\'s name.', 'error');
+                        isValid = false;
+                    }
+                    const teamleaderPhone = teamleaderPhoneInput.value;
+                    if (!/^0\d{9}$/.test(teamleaderPhone)) {
+                        document.getElementById('teamleaderPhone-error').classList.remove('hidden');
+                        showToast('Teamleader phone number must start with 0 and be 10 digits.', 'error');
+                        isValid = false;
+                    }
+                }
+            } else if (currentStep === 1) { // Personal Information
+                // Validate primary phone number (format: 07XXXXXXXX)
+                const primaryPhone = document.getElementById('primaryPhone').value;
+                if (!/^0\d{9}$/.test(primaryPhone)) {
+                    document.getElementById('primaryPhone-error').classList.remove('hidden');
+                    showToast('Phone number must start with 0 and be 10 digits (e.g., 07XXXXXXXX).', 'error');
+                    isValid = false;
+                }
+
+                // Validate email address
+                const emailAddress = emailAddressInput.value;
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) {
+                    document.getElementById('emailAddress-error').classList.remove('hidden');
+                    showToast('Please enter a valid email address.', 'error');
+                    isValid = false;
+                }
+
+                // Conditional validation for NIDA vs Alternative ID
+                if (noNidaCheckbox.checked) {
+                    // Validate alternative ID fields if checkbox is checked
+                    if (otherIdTypeInput.value.trim() === '') {
+                        document.getElementById('otherIdType-error').classList.remove('hidden');
+                        showToast('Please select the other ID type.', 'error');
+                        isValid = false;
+                    }
+                    if (otherIdNumberInput.value.trim() === '') {
+                        document.getElementById('otherIdNumber-error').classList.remove('hidden');
+                        showToast('Please enter the other ID number.', 'error');
+                        isValid = false;
+                    }
+                    if (nidaHolderNameInput.value.trim() === '') {
+                        document.getElementById('nidaHolderName-error').classList.remove('hidden');
+                        showToast('Please enter the NIDA holder\'s full name.', 'error');
+                        isValid = false;
+                    }
+                    if (nidaHolderRelationshipInput.value.trim() === '') {
+                        document.getElementById('nidaHolderRelationship-error').classList.remove('hidden');
+                        showToast('Please select the relationship to the NIDA holder.', 'error');
+                        isValid = false;
+                    }
+                    // Validate NIDA holder's NIDA ID (format: 12345678-12345-12345-12)
+                    const nidaHolderNidaId = nidaHolderNidaIdInput.value;
+                    if (!/^\d{8}-\d{5}-\d{5}-\d{2}$/.test(nidaHolderNidaId)) {
+                        document.getElementById('nidaHolderNidaId-error').classList.remove('hidden');
+                        showToast('Please enter NIDA holder\'s NIDA ID (e.g., 12345678-12345-12345-12).', 'error');
+                        isValid = false;
+                    }
+                    // Validate NIDA holder's phone number (format: 07XXXXXXXX)
+                    const nidaHolderPhone = nidaHolderPhoneInput.value;
+                    if (!/^0\d{9}$/.test(nidaHolderPhone)) {
+                        document.getElementById('nidaHolderPhone-error').classList.remove('hidden');
+                        showToast('NIDA holder\'s phone number must start with 0 and be 10 digits.', 'error');
+                        isValid = false;
+                    }
+
+                    // If alternative ID is used, primary NIDA should not be filled
+                    if (nidaIdInput.value.trim() !== '') {
+                        document.getElementById('nidaId-error').classList.remove('hidden');
+                        showToast('Please clear the primary NIDA ID field if using alternative ID.', 'error');
+                        isValid = false;
+                    }
+                } else {
+                    // Validate primary NIDA if checkbox is not checked (format: 12345678-12345-12345-12)
+                    const nidaId = nidaIdInput.value;
+                    if (!/^\d{8}-\d{5}-\d{5}-\d{2}$/.test(nidaId)) {
+                        document.getElementById('nidaId-error').classList.remove('hidden');
+                        showToast('Please enter your NIDA ID (e.g., 12345678-12345-12345-12).', 'error');
+                        isValid = false;
+                    }
+                    // If primary NIDA is used, alternative ID fields should be empty
+                    if (otherIdTypeInput.value.trim() !== '' || otherIdNumberInput.value.trim() !== '' ||
+                        nidaHolderNameInput.value.trim() !== '' || nidaHolderRelationshipInput.value.trim() !== '' ||
+                        nidaHolderNidaIdInput.value.trim() !== '' || nidaHolderPhoneInput.value.trim() !== '') {
+                        showToast('Please clear alternative ID fields if providing your NIDA ID.', 'error');
+                        isValid = false;
+                    }
+                }
+
+            } else if (currentStep === 2) { // Address Information (new step)
+                // Validate postal code
+                if (!/^\d{5}$/.test(postalCodeInput.value)) {
+                    document.getElementById('postalCode-error').classList.remove('hidden');
+                    showToast('Please enter a valid 5-digit postal code.', 'error');
+                    isValid = false;
+                }
+            } else if (currentStep === 4) { // ID & Facial Verification (now step 4)
+                if (!idUploadInput.files.length) {
+                    showToast('Please upload your NIDA ID document.', 'error');
+                    isValid = false;
+                }
+                if (capturedImage.classList.contains('hidden') || !capturedImage.src || capturedImage.src.includes('placehold.co')) {
+                    showToast('Please capture your facial ID photo.', 'error');
+                    isValid = false;
+                }
+            } else if (currentStep === 5) { // Signatures (now step 5)
+                // If alternative NIDA was used in Step 1, witness NIDA must match nidaHolderNidaId
+                if (noNidaCheckbox.checked) {
+                    if (witnessNidaIdInput.value.trim() !== nidaHolderNidaIdInput.value.trim()) {
+                        document.getElementById('witnessNidaId-error').classList.remove('hidden');
+                        showToast('Witness NIDA ID must match the NIDA holder\'s NIDA ID from Personal Information.', 'error');
+                        isValid = false;
+                    }
+                    // Also check if witness name matches NIDA holder name if alternative ID is used
+                    if (document.getElementById('witnessSignatureName').value.trim() !== nidaHolderNameInput.value.trim()) {
+                        document.getElementById('witnessSignatureName').classList.add('border-red-500'); // Add a visual cue
+                        showToast('Witness name should match the NIDA holder\'s name from Personal Information.', 'error');
+                        isValid = false;
+                    } else {
+                        document.getElementById('witnessSignatureName').classList.remove('border-red-500');
+                    }
+                }
+                // Validate witness phone number (format: 07XXXXXXXX)
+                const witnessSignaturePhone = document.getElementById('witnessSignaturePhone').value;
+                if (!/^0\d{9}$/.test(witnessSignaturePhone)) {
+                    document.getElementById('witnessSignaturePhone-error').classList.remove('hidden');
+                    showToast('Witness phone number must start with 0 and be 10 digits.', 'error');
+                    isValid = false;
+                }
+
+                // General validation for all required signature fields in this step
+                const signatureInputs = currentSection.querySelectorAll('input[required], select[required], textarea[required]');
+                for (let input of signatureInputs) {
+                    if (input.value.trim() === '') {
+                        const errorId = `${input.id}-error`; // Assuming error span exists for all
+                        const errorElement = document.getElementById(errorId);
+                        if (errorElement) errorElement.classList.remove('hidden');
+                        showToast(`Please fill in ${input.previousElementSibling.textContent.replace(':', '')} in the signature section.`, 'error');
+                        isValid = false;
+                        // No need to focus here, as we want to show all errors in this step
+                    }
+                }
+            }
+
+            // Final check for any remaining required fields in the current section
+            // This loop is for general required fields that might not have specific validation logic above
+            for (let input of inputsToValidate) {
+                if (input.value.trim() === '') {
+                    const errorId = `${input.id}-error`;
+                    const errorElement = document.getElementById(errorId);
+                    if (errorElement) errorElement.classList.remove('hidden');
+                    // Only show a general toast if no specific error message was already shown for this input
+                    if (isValid) { // This ensures only one general "fill in" toast appears
+                        showToast(`Please fill in ${input.previousElementSibling.textContent.replace(':', '')}.`, 'error');
+                    }
+                    isValid = false;
+                    input.focus(); // Focus on the first empty required field
+                    break; // Stop after finding the first empty required field
+                }
+            }
+
+            return isValid;
+        }
+
+
+        /**
+         * Starts the camera feed and displays it in the video element.
+         * Handles camera access permissions and provides fallback if camera is not available.
+         */
+        async function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    cameraFeed.srcObject = stream;
+                    cameraFeed.play();
+                    cameraFeed.classList.remove('hidden'); // Ensure video is visible when starting
+                    cameraStatus.textContent = 'Camera active. Position your face within the frame.';
+                    capturePhotoBtn.classList.remove('hidden');
+                } catch (error) {
+                    cameraStatus.textContent = 'Could not access camera. Please ensure camera permissions are granted or upload an image instead.';
+                    showToast('Camera access denied. Please check your browser permissions.', 'error');
+                    capturePhotoBtn.classList.add('hidden'); // Hide capture button if camera fails
+                    cameraFeed.classList.add('hidden'); // Hide video element if camera fails
+                    // Offer an alternative to upload an image if camera access is denied
+                    const imageUpload = document.createElement('input');
+                    imageUpload.type = 'file';
+                    imageUpload.accept = 'image/*';
+                    imageUpload.className = 'mt-2 p-2 border border-gray-300 rounded-md';
+                    cameraStatus.appendChild(imageUpload); // Append upload input to status message
+                    imageUpload.addEventListener('change', () => {
+                        const file = imageUpload.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                capturedImage.src = reader.result;
+                                capturedImage.classList.remove('hidden');
+                                cameraStatus.textContent = 'Image uploaded successfully!';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            } else {
+                cameraStatus.textContent = 'Your browser does not support camera access.';
+                showToast('Browser does not support camera.', 'error');
+                capturePhotoBtn.classList.add('hidden');
+                cameraFeed.classList.add('hidden'); // Hide video element if not supported
+            }
+        }
+
+        /**
+         * Stops the camera stream and hides camera-related elements.
+         */
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop()); // Stop all tracks in the stream
+                cameraFeed.srcObject = null; // Disconnect the stream from the video element
+                stream = null;
+            }
+            cameraFeed.classList.add('hidden'); // Hide the video element
+            capturePhotoBtn.classList.add('hidden'); // Hide the capture button
+            cameraStatus.textContent = ''; // Clear camera status
+        }
+
+        /**
+         * Generates the HTML content for the contract preview based on form inputs.
+         */
+        function generatePreview() {
+            const freelancerType = freelancerTypeSelect.value;
+            const teamleaderId = teamleaderIdInput.value;
+            const teamleaderName = teamleaderNameInput.value; // Get teamleader name
+            const teamleaderPhone = teamleaderPhoneInput.value; // Get teamleader phone
+
+            const agentFullName = document.getElementById('agentFullName').value;
+            const primaryPhone = document.getElementById('primaryPhone').value;
+            const alternativePhone = document.getElementById('alternativePhone').value;
+            const emailAddress = emailAddressInput.value;
+            const nidaId = document.getElementById('nidaId').value;
+            const tinNumber = tinNumberInput.value;
+            const region = regionSelect.value;
+            const district = districtSelect.value;
+            const ward = wardSelect.value;
+            const street = streetInput.value;
+            const postalCode = postalCodeInput.value;
+
+            const contractAcceptanceName = document.getElementById('contractAcceptanceName').value;
+            const contractAcceptanceDate = document.getElementById('contractAcceptanceDate').value;
+
+            const agentSignatureName = document.getElementById('agentSignatureName').value;
+            const agentSignatureDate = document.getElementById('agentSignatureDate').value;
+            const agentSignaturePhone = document.getElementById('agentSignaturePhone').value;
+
+            const witnessSignatureName = document.getElementById('witnessSignatureName').value;
+            const witnessNidaId = document.getElementById('witnessNidaId').value;
+            const witnessSignatureDate = document.getElementById('witnessSignatureDate').value;
+            const witnessSignaturePhone = document.getElementById('witnessSignaturePhone').value;
+
+            const agentRepSignatureName = document.getElementById('agentRepSignatureName').value;
+            const agentRepSignatureDate = document.getElementById('agentRepSignatureDate').value;
+            const agentRepSignaturePhone = document.getElementById('agentRepSignaturePhone').value;
+
+            let freelancerInfo = `
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">0. Freelancer Parent Tree</h2>
+                    <p><strong>Aina ya Freelancer:</strong> ${freelancerType}</p>
+                    ${freelancerType === 'Under Teamleader' ? `
+                        <p><strong>Teamleader ID:</strong> ${teamleaderId}</p>
+                        <p><strong>Jina la Teamleader:</strong> ${teamleaderName}</p>
+                        <p><strong>Namba ya Simu ya Teamleader:</strong> ${teamleaderPhone}</p>
+                    ` : ''}
+                </div>
+            `;
+
+            let alternativeIdInfo = '';
+            if (noNidaCheckbox.checked) {
+                alternativeIdInfo = `
+                    <h3 class="text-lg font-medium text-gray-800 mt-4 mb-2">Taarifa Nyingine ya Kitambulisho (Mzazi/Mwenzi):</h3>
+                    <p><strong>Aina ya Kitambulisho:</strong> ${otherIdTypeInput.value}</p>
+                    <p><strong>Namba ya Kitambulisho:</strong> ${otherIdNumberInput.value}</p>
+                    <p><strong>Jina la Mwenye NIDA:</strong> ${nidaHolderNameInput.value}</p>
+                    <p><strong>Uhusiano na Mwenye NIDA:</strong> ${nidaHolderRelationshipInput.value}</p>
+                    <p><strong>NIDA ya Mwenye NIDA:</strong> ${nidaHolderNidaIdInput.value}</p>
+                    <p><strong>Namba ya Simu ya Mwenye NIDA:</strong> ${nidaHolderPhoneInput.value}</p>
+                    <p class="text-sm text-red-600">Kumbuka: Mwenye NIDA aliyetajwa hapa ndiye shahidi.</p>
+                `;
+            }
+
+            let addressInfo = `
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">2. Mahali anapoishi (Address Information)</h2>
+                    <p><strong>Mkoa:</strong> ${region}</p>
+                    <p><strong>Wilaya:</strong> ${district}</p>
+                    <p><strong>Kata:</strong> ${ward}</p>
+                    <p><strong>Mtaa:</strong> ${street}</p>
+                    <p><strong>Postal Code:</strong> ${postalCode}</p>
+                </div>
+            `;
+
+            let previewHtml = `
+                <h1 class="text-2xl font-bold text-center text-blue-800 mb-6">AzamPesa Digital Contract - Preview</h1>
+                <img src="https://azampesa.co.tz/wp-content/uploads/2023/05/AzamPesa-logo.png" alt="AzamPesa Logo" class="w-24 h-auto mx-auto mb-6">
+                ${freelancerInfo}
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">1. Personal Information</h2>
+                    <p><strong>Majina kamili ya Msajili akaunti:</strong> ${agentFullName}</p>
+                    <p><strong>Namba ya simu ya kufungulia:</strong> ${primaryPhone}</p>
+                    <p><strong>Namba ya simu mbadala:</strong> ${alternativePhone || 'N/A'}</p>
+                    <p><strong>Email Address:</strong> ${emailAddress}</p>
+                    <p><strong>Namba ya kitambulisho cha Taifa (NIDA):</strong> ${nidaId || 'N/A'}</p>
+                    <p><strong>Namba ya Utambulisho wa Kodi (TIN):</strong> ${tinNumber || 'N/A'}</p>
+                    ${alternativeIdInfo}
+                </div>
+                ${addressInfo}
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">3. Contract Terms</h2>
+                    <p class="text-sm text-gray-700">KWA KUSAINI HAPA CHINI, NATHIBITISHA YAFUATAYO:</p>
+                    <ul class="list-decimal list-inside text-sm text-gray-700 space-y-2 mt-2">
+                        <li>Mimi ni wakala halali wa AzamPesa niliyesajiliwa kwa ajili ya kutoa huduma ya kusajili akaunti za AzamPesa.</li>
+                        <li>Na kwa mamlaka niliyopewa na AzamPesa Tanzania Ltd namteua msajili akaunti ("Agent staff") kufanya usajili wa akaunti za AzamPesa kwa niaba yangu, kwa kuzingatia sheria na kanuni zote za AzamPesa na Mamlaka ya Mawasiliano Tanzania (TCRA).</li>
+                        <li>Nakubali kuwa na jukumu kamili la vitendo vyote vitakavyofanywa na "Agent staff" katika kutekeleza majukumu yake ya usajili wa akaunti za AzamPesa.</li>
+                        <li>Ninathibitisha kuwa nimepokea mafunzo ya kutosha kuhusu taratibu za usajili wa akaunti za AzamPesa na ninaelewa kikamilifu majukumu yangu kama wakala na yale ya "Agent staff".</li>
+                        <li>Ninakubali kutoa taarifa sahihi na kamili kwa AzamPesa kuhusu "Agent staff" wote ninaowateua, na nitawajibika kutoa taarifa za mabadiliko yoyote yanayohusu "Agent staff" hao.</li>
+                        <li>Ninakubali kuwa AzamPesa ina haki ya kusitisha mkataba huu mara moja endapo kutakuwa na ukiukaji wowote wa masharti haya au kanuni za AzamPesa au TCRA.</li>
+                        <li>Ninakubali kuwa AzamPesa haitawajibika kwa hasara yoyote itakayotokana na uzembe, udanganyifu, atau vitendo vingine visivyo halali vilivyofanywa na "Agent staff" wangu.</li>
+                        <li>Ninakubali kuwa mkataba huu unaweza kubadilishwa au kurekebishwa na AzamPesa kwa kutoa ilani ya maandishi.</li>
+                        <li>Ninakubali kuwa mkataba huu unatawaliwa na sheria za Jamhuri ya Muungano wa Tanzania.</li>
+                    </ul>
+                    <p class="mt-4"><strong>Kukubali Masharti:</strong> ${contractAcceptanceName}</p>
+                    <p><strong>Tarehe ya Kukubali:</strong> ${contractAcceptanceDate}</p>
+                </div>
+
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">4. ID & Facial Verification</h2>
+                    <p><strong>NIDA ID Document:</strong> ${idUploadInput.files.length > 0 ? idUploadInput.files[0].name : 'Not uploaded'}</p>
+                    ${capturedImage.src && !capturedImage.src.includes('placehold.co') ? `<p class="mt-2"><strong>Facial ID Photo:</strong></p><img src="${capturedImage.src}" alt="Captured Facial Photo" class="w-48 h-auto rounded-md border border-gray-300 mt-2">` : '<p><strong>Facial ID Photo:</strong> Not captured</p>'}
+                </div>
+
+                <div class="mb-8 p-4 border border-gray-200 rounded-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-3">5. Signatures</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Agent Staff Signature</h3>
+                            <p class="signature-field"><strong>Jina:</strong> ${agentSignatureName}</p>
+                            <p><strong>Tarehe:</strong> ${agentSignatureDate}</p>
+                            <p><strong>Namba ya Simu:</strong> ${agentSignaturePhone}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Witness Signature</h3>
+                            <p class="signature-field"><strong>Jina:</strong> ${witnessSignatureName}</p>
+                            <p><strong>NIDA:</strong> ${witnessNidaId}</p>
+                            <p><strong>Tarehe:</strong> ${witnessSignatureDate}</p>
+                            <p><strong>Namba ya Simu:</strong> ${witnessSignaturePhone}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">AzamPesa Agent Representative Signature</h3>
+                            <p class="signature-field"><strong>Jina:</strong> ${agentRepSignatureName}</p>
+                            <p><strong>Tarehe:</strong> ${agentRepSignatureDate}</p>
+                            <p><strong>Namba ya Simu:</strong> ${agentRepSignaturePhone}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            previewContent.innerHTML = previewHtml;
+        }
+
+        // Event Listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (validateCurrentStep()) { // Validate current step before moving to the next
+                if (currentStep < totalSteps - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        });
+
+        // Event listener for form submission
+        contractForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent default form submission
+            if (validateCurrentStep()) {
+                showToast('Contract submitted successfully!', 'success');
+                // Here you would typically send the form data to a server
+                console.log('Form Data Submitted:', {
+                    freelancerType: freelancerTypeSelect.value,
+                    teamleaderId: freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderIdInput.value : null,
+                    teamleaderName: freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderNameInput.value : null,
+                    teamleaderPhone: freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderPhoneInput.value : null,
+                    agentFullName: document.getElementById('agentFullName').value,
+                    primaryPhone: document.getElementById('primaryPhone').value,
+                    alternativePhone: document.getElementById('alternativePhone').value,
+                    emailAddress: emailAddressInput.value,
+                    nidaId: noNidaCheckbox.checked ? null : nidaIdInput.value, // Only include primary NIDA if not using alternative
+                    tinNumber: tinNumberInput.value,
+                    otherIdType: noNidaCheckbox.checked ? otherIdTypeInput.value : null,
+                    otherIdNumber: noNidaCheckbox.checked ? otherIdNumberInput.value : null,
+                    nidaHolderName: noNidaCheckbox.checked ? nidaHolderNameInput.value : null,
+                    nidaHolderRelationship: noNidaCheckbox.checked ? nidaHolderRelationshipInput.value : null,
+                    nidaHolderNidaId: noNidaCheckbox.checked ? nidaHolderNidaIdInput.value : null,
+                    nidaHolderPhone: noNidaCheckbox.checked ? nidaHolderPhoneInput.value : null,
+                    region: regionSelect.value,
+                    district: districtSelect.value,
+                    ward: wardSelect.value,
+                    street: streetInput.value,
+                    postalCode: postalCodeInput.value,
+                    contractAcceptanceName: document.getElementById('contractAcceptanceName').value,
+                    contractAcceptanceDate: document.getElementById('contractAcceptanceDate').value,
+                    idDocument: idUploadInput.files.length > 0 ? idUploadInput.files[0].name : null,
+                    facialPhoto: capturedImage.src,
+                    agentSignatureName: document.getElementById('agentSignatureName').value,
+                    agentSignatureDate: document.getElementById('agentSignatureDate').value,
+                    agentSignaturePhone: document.getElementById('agentSignaturePhone').value,
+                    witnessSignatureName: document.getElementById('witnessSignatureName').value,
+                    witnessNidaId: document.getElementById('witnessNidaId').value, // Include witness NIDA ID in console log
+                    witnessSignatureDate: document.getElementById('witnessSignatureDate').value,
+                    witnessSignaturePhone: document.getElementById('witnessSignaturePhone').value,
+                    agentRepSignatureName: document.getElementById('agentRepSignatureName').value,
+                    agentRepSignatureDate: document.getElementById('agentRepSignatureDate').value,
+                    agentRepSignaturePhone: document.getElementById('agentRepSignaturePhone').value,
+                });
+            }
+        });
+
+        // Event listener for capturing photo from camera feed
+        capturePhotoBtn.addEventListener('click', () => {
+            if (stream) {
+                const context = cameraCanvas.getContext('2d');
+                cameraCanvas.width = cameraFeed.videoWidth;
+                cameraCanvas.height = cameraFeed.videoHeight;
+                context.drawImage(cameraFeed, 0, 0, cameraCanvas.width, cameraCanvas.height);
+                const imageDataUrl = cameraCanvas.toDataURL('image/png'); // Get image data as PNG
+                capturedImage.src = imageDataUrl;
+                capturedImage.classList.remove('hidden'); // Show the captured image
+                cameraStatus.textContent = 'Photo captured successfully!';
+                stopCamera(); // Stop and hide camera after successful capture
+            } else {
+                showToast('No camera feed available. Please start the camera first.', 'error');
+            }
+        });
+
+        // Event listener for NIDA ID document upload input
+        idUploadInput.addEventListener('change', () => {
+            if (idUploadInput.files.length > 0) {
+                idUploadFileName.textContent = `File: ${idUploadInput.files[0].name}`;
+            } else {
+                idUploadFileName.textContent = '';
+            }
+        });
+
+        // Event listener for sharing contract summary
+        shareContractBtn.addEventListener('click', () => {
+            const freelancerType = freelancerTypeSelect.value;
+            const teamleaderId = freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderIdInput.value : 'N/A';
+            const teamleaderName = freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderNameInput.value : 'N/A';
+            const teamleaderPhone = freelancerTypeSelect.value === 'Under Teamleader' ? teamleaderPhoneInput.value : 'N/A';
+
+            const agentName = document.getElementById('agentFullName').value;
+            const primaryPhone = document.getElementById('primaryPhone').value;
+            const alternativePhone = document.getElementById('alternativePhone').value;
+            const emailAddress = emailAddressInput.value;
+            const nidaId = noNidaCheckbox.checked ? 'N/A (Alternative ID used)' : nidaIdInput.value;
+            const tinNumber = tinNumberInput.value || 'N/A';
+            const otherIdType = noNidaCheckbox.checked ? otherIdTypeInput.value : 'N/A';
+            const otherIdNumber = noNidaCheckbox.checked ? otherIdNumberInput.value : 'N/A';
+            const nidaHolderName = noNidaCheckbox.checked ? nidaHolderNameInput.value : 'N/A';
+            const nidaHolderRelationship = noNidaCheckbox.checked ? nidaHolderRelationshipInput.value : 'N/A';
+            const nidaHolderNida = noNidaCheckbox.checked ? nidaHolderNidaIdInput.value : 'N/A';
+            const nidaHolderPhone = noNidaCheckbox.checked ? nidaHolderPhoneInput.value : 'N/A';
+
+
+            const address = `${regionSelect.value}, ${districtSelect.value}, ${wardSelect.value}, ${streetInput.value}, ${postalCodeInput.value}`;
+            const contractAcceptanceName = document.getElementById('contractAcceptanceName').value;
+            const contractAcceptanceDate = document.getElementById('contractAcceptanceDate').value;
+            const witnessName = document.getElementById('witnessSignatureName').value;
+            const witnessNida = document.getElementById('witnessNidaId').value; // Get witness NIDA ID for sharing
+
+            let shareText = `AzamPesa Digital Contract Summary:\n`;
+            shareText += `Freelancer Type: ${freelancerType}\n`;
+            if (freelancerType === 'Under Teamleader') {
+                shareText += `Teamleader ID: ${teamleaderId}\n`;
+                shareText += `Teamleader Name: ${teamleaderName}\n`;
+                shareText += `Teamleader Phone: ${teamleaderPhone}\n`;
+            }
+            shareText += `Agent: ${agentName}\nPhone: ${primaryPhone}\nEmail: ${emailAddress}\n`;
+            if (noNidaCheckbox.checked) {
+                shareText += `Agent ID (Alternative): Type: ${otherIdType}, Number: ${otherIdNumber}\n`;
+                shareText += `NIDA Holder (Parent/Spouse): Name: ${nidaHolderName}, Relationship: ${nidaHolderRelationship}, NIDA: ${nidaHolderNida}, Phone: ${nidaHolderPhone}\n`;
+            } else {
+                shareText += `Agent NIDA ID: ${nidaId}\n`;
+            }
+            shareText += `TIN: ${tinNumber}\n`;
+            shareText += `Address: ${address}\nTerms Accepted By: ${contractAcceptanceName} on ${contractAcceptanceDate}\nWitness: ${witnessName} (NIDA: ${witnessNida})`;
+
+
+            // Use Web Share API if available, otherwise fallback to clipboard
+            if (navigator.share) {
+                navigator.share({
+                    title: 'AzamPesa Digital Contract',
+                    text: shareText,
+                    url: window.location.href // Optional: share the current page URL
+                }).catch((error) => {
+                    // If sharing fails (e.g., user cancels, or not supported on desktop), fallback to clipboard
+                    console.error('Web Share API failed:', error);
+                    document.execCommand('copy'); // Fallback to deprecated method for clipboard copy
+                    showToast('Summary copied to clipboard!', 'success');
+                });
+            } else {
+                // Fallback for browsers that do not support Web Share API
+                document.execCommand('copy'); // Fallback to deprecated method for clipboard copy
+                showToast('Summary copied to clipboard!', 'success');
+            }
+        });
+
+        // Event listener for printing the contract
+        printContractBtn.addEventListener('click', () => {
+            window.print(); // Triggers the browser's print dialog
+        });
+
+        // Event listeners for location dropdowns
+        regionSelect.addEventListener('change', populateDistricts);
+        districtSelect.addEventListener('change', populateWards);
+
+        // Event listener for "I do not possess a NIDA ID" checkbox
+        noNidaCheckbox.addEventListener('change', () => {
+            if (noNidaCheckbox.checked) {
+                alternativeIdSection.classList.remove('hidden');
+                nidaIdInput.removeAttribute('required'); // Make primary NIDA not required
+                nidaIdInput.value = ''; // Clear primary NIDA
+                nidaIdInput.classList.add('bg-gray-200'); // Visually indicate it's disabled
+                nidaIdInput.classList.remove('bg-gray-50');
+                nidaIdInput.setAttribute('disabled', 'true'); // Disable primary NIDA input
+
+                // Make alternative ID fields required
+                otherIdTypeInput.setAttribute('required', 'true');
+                otherIdNumberInput.setAttribute('required', 'true');
+                nidaHolderNameInput.setAttribute('required', 'true');
+                nidaHolderRelationshipInput.setAttribute('required', 'true');
+                nidaHolderNidaIdInput.setAttribute('required', 'true');
+                nidaHolderPhoneInput.setAttribute('required', 'true');
+
+
+                // Clear any previous errors for primary NIDA
+                document.getElementById('nidaId-error').classList.add('hidden');
+
+            } else {
+                alternativeIdSection.classList.add('hidden');
+                nidaIdInput.setAttribute('required', 'true'); // Make primary NIDA required again
+                nidaIdInput.removeAttribute('disabled'); // Enable primary NIDA input
+                nidaIdInput.classList.remove('bg-gray-200');
+                nidaIdInput.classList.add('bg-gray-50');
+
+                // Make alternative ID fields not required and clear their values
+                otherIdTypeInput.removeAttribute('required');
+                otherIdNumberInput.removeAttribute('required');
+                nidaHolderNameInput.removeAttribute('required');
+                nidaHolderRelationshipInput.removeAttribute('required');
+                otherIdTypeInput.value = '';
+                otherIdNumberInput.value = '';
+                nidaHolderNameInput.value = '';
+                nidaHolderRelationshipInput.value = '';
+                nidaHolderNidaIdInput.value = '';
+                nidaHolderPhoneInput.value = '';
+
+
+                // Clear any previous errors for alternative ID fields
+                document.getElementById('otherIdType-error').classList.add('hidden');
+                document.getElementById('otherIdNumber-error').classList.add('hidden');
+                document.getElementById('nidaHolderName-error').classList.add('hidden');
+                document.getElementById('nidaHolderRelationship-error').classList.add('hidden');
+                document.getElementById('nidaHolderNidaId-error').classList.add('hidden');
+                document.getElementById('nidaHolderPhone-error').classList.add('hidden');
+            }
+        });
+
+        // Event listener for Freelancer Type dropdown
+        freelancerTypeSelect.addEventListener('change', () => {
+            if (freelancerTypeSelect.value === 'Under Teamleader') {
+                teamleaderIdSection.classList.remove('hidden');
+                teamleaderIdInput.setAttribute('required', 'true');
+                teamleaderNameInput.setAttribute('required', 'true'); // Make teamleader name required
+                teamleaderPhoneInput.setAttribute('required', 'true'); // Make teamleader phone required
+            } else {
+                teamleaderIdSection.classList.add('hidden');
+                teamleaderIdInput.removeAttribute('required');
+                teamleaderNameInput.removeAttribute('required'); // Make teamleader name not required
+                teamleaderPhoneInput.removeAttribute('required'); // Make teamleader phone not required
+
+                teamleaderIdInput.value = ''; // Clear value when hidden
+                teamleaderNameInput.value = ''; // Clear value when hidden
+                teamleaderPhoneInput.value = ''; // Clear value when hidden
+
+                document.getElementById('teamleaderId-error').classList.add('hidden'); // Hide error
+                document.getElementById('teamleaderName-error').classList.add('hidden'); // Hide error
+                document.getElementById('teamleaderPhone-error').classList.add('hidden'); // Hide error
+            }
+        });
+
+
+        // Populate regions when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', populateRegions);
+
+        // Initialize the form by showing the first step when the window loads
+        window.onload = () => {
+            showStep(currentStep);
+        };
+    </script>
+</body>
+</html>
